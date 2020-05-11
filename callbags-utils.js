@@ -37,3 +37,9 @@ module.exports.buildMessage = (location,success,message, data) =>{
     //data === obj
     return {location:location, success:success, message:message, data:data}
 }
+module.exports.asyncMap = f => source => (start, sink) => {
+    if (start !== 0) return;
+    source(0, async (t, d) => {
+        sink(t, t === 1 ? await f(d) : d)
+    })
+}
