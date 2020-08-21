@@ -1,10 +1,7 @@
 //callbags - express module
-const {createExpressSource,processEP,assignEndPoints,startWithExpress} = require('./callbags-express')
-module.exports.callbagsExpress = {createExpressSource,processEP,assignEndPoints, startWithExpress}
+module.exports.callbagsExpress = require('./callbags-expres')
 //callbags - low module
-const {createLowDBSource} = require('./callbags-lowdb')
-module.exports.callbagsLowDB = {createLowDBSource}
+module.exports.callbagsLowDB = require('./callbags-lowdb')
 //callbags utils
-const {forEachAsync,startWithAsyncTask,inject,asyncMap} = require('./callbags-utils')
-module.exports.callbagsUtils = {forEachAsync,startWithAsyncTask,inject,asyncMap}
+module.exports.callbagsUtils = require('./callbags-utils')
 
