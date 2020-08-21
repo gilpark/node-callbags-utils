@@ -1,4 +1,18 @@
 const express = require('express')
+
+module.exports.startWithExpress = (app,setupProcess = null) =>  (start, sink) => {
+    if(start !== 0) return
+    if(typeof setupProcess === "function"){
+        setupProcess(app)
+    }
+    sink(0, t => {
+        if(t === 2){
+            console.log('clean up')
+        }
+    })
+    sink(-1,app)
+}
+
 module.exports.createExpressSource = (port, setupProcess = null) => (start,sink) => {
     if(start !== 0) return
     const app = express()

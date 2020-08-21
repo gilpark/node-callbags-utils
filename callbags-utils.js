@@ -16,6 +16,7 @@ module.exports.startWithAsyncTask = (task) => async (start, sink) => {
     let data = await task()
     sink(1,data)
 }
+
 module.exports.inject = (...objs) => source => (start,sink) =>{
     if(start !== 0) return
     source(0, (t, d) => {
