@@ -1,6 +1,6 @@
 //callbags - express module
-const {createExpressSource,processEP,assignEndPoints} = require('./callbags-express')
-module.exports.CallbagsExpress = {createExpressSource,processEP,assignEndPoints}
+const {createExpressSource,processEP,assignEndPoints,startWithExpress} = require('./callbags-express')
+module.exports.CallbagsExpress = {createExpressSource,processEP,assignEndPoints, startWithExpress}
 //callbags - low module
 const {createLowDBSource} = require('./callbags-lowdb')
 module.exports.CallbagsLowDB = {createLowDBSource}
