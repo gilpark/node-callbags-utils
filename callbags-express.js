@@ -1,4 +1,16 @@
-const express = require('express')
+const callbagsExpress = require('express')
+const {pipe, share, merge, filter, forEach, map} = require('callbag-basics')
+
+//todo create module for basic utils
+function getDateTime() {
+    let d = new Date();
+    return ("00" + (d.getMonth() + 1)).slice(-2) + "-" +
+        ("00" + d.getDate()).slice(-2) + "-" +
+        ("00" + d.getHours()).slice(-2) + "h" +
+        ("00" + d.getMinutes()).slice(-2) + "m" +
+        ("00" + d.getSeconds()).slice(-2) + "s"
+}
+String.prototype.isEmpty = () => this === ""
 
 module.exports.startWithExpress = (app,setupProcess = null) =>  (start, sink) => {
     if(start !== 0) return
@@ -15,7 +27,7 @@ module.exports.startWithExpress = (app,setupProcess = null) =>  (start, sink) =>
 
 module.exports.createExpressSource = (port, setupProcess = null) => (start,sink) => {
     if(start !== 0) return
-    const app = express()
+    const app = callbagsExpress()
     if(typeof setupProcess === "function"){
         setupProcess(app)
     }
@@ -31,51 +43,37 @@ module.exports.createExpressSource = (port, setupProcess = null) => (start,sink)
         console.log(`[${getDateTime()}] NextNow services are running on port`, app.get('port'))
     })
 }
-//note: 너무 어렵다. 하지만 좋은 효과, sink콜백을 받아서 차후에 데이터를 넘길수 있다.
-//좀더 다목적으로 만드는게 좋겠다.
-module.exports.processEP = (path,isPost = false) => fn => {
-    return source => (start, sink) => {
-        if (start !== 0) return
-        source(0, (t, d) => {
-            if (t === -1) {
-                let app = d
-                let handler = fn(sink)
-                if (isPost) {
-                    app.post(path, handler)
-                } else {
-                    app.get(path, handler)
-                }
-                sink(-1, app)
-            } else {
-                sink(t, d)
-            }
 
-        })
-    }
-}
-module.exports.assignEndPoints = (...endpoints) =>{
+module.exports.addRoutes = (...paths) =>{
     return source => (start,sink) =>{
         if(start !== 0) return
         source(0, (t, d) => {
             if (t === -1) {
                 let app = d
-                for(let i = 0; i < endpoints.length; i++){
-                    let{endpoint,method} = endpoints[i]
-                    if(method.toLowerCase() ==='get'){
-                        app.get(endpoint, (req,res) => sink(1,{endpoint,req,res}))
-                    }else if(method.toLowerCase() ==='post'){
-                        app.post(endpoint, (req,res) => sink(1,{endpoint,req,res}))
-                    }else if(method.toLowerCase() ==='delete'){
-                        app.delete(endpoint, (req,res) => sink(1,{endpoint,req,res}))
-                    }else{
-                        console.warn(`${method} has not implemented`)
-                        app.all(endpoint,(req,res) => sink(1,{endpoint,req,res}))
-                    }
-                }
+                paths.forEach(({path, method}) => {
+                    if(path.isEmpty()) throw new Error('path is empty')
+                    if(method.isEmpty()) throw new Error('method is empty')
+                    app[method.toLowerCase()](path, (req,res) => sink(1,{path,req,res}))
+                })
                 sink(-1,app)
             } else{
                 sink(t, d)
             }
         })
+    }
+}
+
+//todo add regex for custom filtering
+module.exports.makeRoutes = (path, method) =>{
+    if(path.isEmpty()) throw new Error('path is empty')
+    if(method.isEmpty()) throw new Error('method is empty')
+    return {
+        path,
+        method,
+        connect: stream => pipe(
+            stream,
+            filter(d => d.path === path),
+            map(d => ({res:d.res,req:d.req}))
+        )
     }
 }
